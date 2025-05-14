@@ -44,17 +44,14 @@ public class GameConstants {
         MILITARY_UNIT_UPKEEP.put("aircraft", 500.0);
         MILITARY_UNIT_UPKEEP.put("ships", 3375.0);
     }
-    
-    // Improvement Details (cost, max count, upkeep, etc.)
+
     public static final Map<String, Map<String, Object>> IMPROVEMENT_DETAILS = new HashMap<>();
     static {
-        // Military improvements
         addImprovement("barracks", 3000000, 5, 0);
         addImprovement("factory", 15000000, 5, 0);
         addImprovement("hangar", 100000000, 5, 0);
         addImprovement("drydock", 250000000, 3, 0);
         
-        // Commercial improvements
         Map<String, Object> supermarket = addImprovement("supermarket", 5000, 6, 600);
         supermarket.put("commerce_bonus", 4.0);
         
@@ -71,7 +68,6 @@ public class GameConstants {
         subway.put("commerce_bonus", 8.0);
         subway.put("pollution_reduction", 45);
         
-        // Service improvements
         Map<String, Object> hospital = addImprovement("hospital", 100000, 5, 1000);
         hospital.put("disease_reduction_base", 2.5);
         

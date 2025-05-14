@@ -8,9 +8,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-/**
- * Analyzes city data and calculates optimal builds
- */
 public class CityAnalyzer {
     private static final Logger logger = LoggerFactory.getLogger(CityAnalyzer.class);
     
@@ -115,7 +112,6 @@ public class CityAnalyzer {
         result.put("improvements", cityImprovements);
         result.put("mmr_status", mmrComplianceResult);
         
-        // Add the financial details
         result.putAll(financialDetails);
         
         return result;
@@ -147,7 +143,6 @@ public class CityAnalyzer {
                 }
             }
         }
-        
         result.put("compliant", isCompliant);
         result.put("mmr_type", mmrRequirements.get("name"));
         result.put("missing_improvements", missingImprovements);
@@ -226,15 +221,12 @@ public class CityAnalyzer {
             }
         }
         
-        // Apply policy multiplier if applicable
         Map<String, Object> policySettings = policyEffects.get(nationPolicy);
         if (policySettings != null && "pollution_multiplier".equals(policySettings.get("target_metric"))) {
             double policyMultiplier = ((Number) policySettings.getOrDefault("value", 1.0)).doubleValue();
             currentPollution *= policyMultiplier;
         }
         
-        // Subtract pollution reductions
-        // Recycling centers
         Map<String, Object> recyclingConfig = improvementDetails.get("recyclingcenter");
         if (recyclingConfig != null) {
             int recyclingCount = cityImprovements.getOrDefault("recyclingcenter", 0);

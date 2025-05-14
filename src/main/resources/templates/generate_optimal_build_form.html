@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Analysis - PnW Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .form-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .form-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .form-check-input:checked {
+            background-color: #6f42c1;
+            border-color: #6f42c1;
+        }
+        .btn-primary {
+            background-color: #6f42c1;
+            border-color: #6f42c1;
+        }
+        .btn-primary:hover {
+            background-color: #5a32a3;
+            border-color: #5a32a3;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #6f42c1;
+        }
+        .feature-icon {
+            font-size: 2rem;
+            color: #6f42c1;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Generate Analysis</li>
+            </ol>
+        </nav>
+
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h3 class="mb-0">Generate PnW Analysis</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead">Select the type of analysis you want to generate and enter the required information.</p>
+                        
+                        <ul class="nav nav-pills mb-4" id="analysisTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="alliance-tab" data-bs-toggle="pill" data-bs-target="#alliance-form" 
+                                        type="button" role="tab" aria-controls="alliance-form" aria-selected="true">
+                                    Alliance Analysis
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="nation-tab" data-bs-toggle="pill" data-bs-target="#nation-form" 
+                                        type="button" role="tab" aria-controls="nation-form" aria-selected="false">
+                                    Nation Analysis
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="city-tab" data-bs-toggle="pill" data-bs-target="#city-form" 
+                                        type="button" role="tab" aria-controls="city-form" aria-selected="false">
+                                    City Build Optimizer
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="analysisTabContent">
+                            <!-- Alliance Analysis Form -->
+                            <div class="tab-pane fade show active" id="alliance-form" role="tabpanel" aria-labelledby="alliance-tab">
+                                <form th:action="@{/alliance/analyze}" method="post">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="allianceId" class="form-label">Alliance ID</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="allianceId" name="allianceId" 
+                                                           placeholder="Enter alliance ID" required>
+                                                    <button class="btn btn-outline-secondary" type="button" id="allianceSearchButton" 
+                                                            data-bs-toggle="modal" data-bs-target="#allianceSearchModal">
+                                                        <i class="bi bi-search"></i> Search
+                                                    </button>
+                                                </div>
+                                                <div class="form-text">Enter the ID of the alliance you want to analyze.</div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="allianceMmrType" class="form-label">MMR Type</label>
+                                                <select class="form-select" id="allianceMmrType" name="mmrType">
+                                                    <option value="peacetime" 
+                                                            th:selected="${defaultMmrType != null && defaultMmrType == 'peacetime'}">
+                                                        Peacetime MMR (0/2/5/0)
+                                                    </option>
+                                                    <option value="raid" 
+                                                            th:selected="${defaultMmrType != null && defaultMmrType == 'raid'}">
+                                                        Raid MMR (5/0/0/0)
+                                                    </option>
+                                                    <option value="wartime" 
+                                                            th:selected="${defaultMmrType != null && defaultMmrType == 'wartime'}">
+                                                        Wartime MMR (5/5/5/3)
+                                                    </option>
+                                                    <option value="custom" 
+                                                            th:selected="${defaultMmrType != null && defaultMmrType == 'custom'}"
+                                                            th:if="${customMmrEnabled}">
+                                                        <span th:text="${customMmrName != null ? customMmrName : 'Custom MMR'}"></span>
+                                                    </option>
+                                                </select>
+                                                <div class="form-text">Select the MMR type to check compliance against.</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="card mb-3">
+                                                <div class="card-header">Analysis Options</div>
+                                                <div class="card-body">
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="checkbox" id="includeMmrCheck" name="includeMmrCheck" checked>
+                                                        <label class="form-check-label" for="includeMmrCheck">Check MMR Compliance</label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="checkbox" id="includeResourceAnalysis" name="includeResourceAnalysis" checked>
+                                                        <label class="form-check-label" for="includeResourceAnalysis">Include Resource Analysis</label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="checkbox" id="includeFinancialAnalysis" name="includeFinancialAnalysis" checked>
+                                                        <label class="form-check-label" for="includeFinancialAnalysis">Include Financial Analysis</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="includeCityRecommendations" name="includeCityRecommendations" checked>
+                                                        <label class="form-check-label" for="includeCityRecommendations">Generate City Recommendations</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" id="skipCache" name="skipCache">
+                                                <label class="form-check-label" for="skipCache">Skip cache and fetch fresh data</label>
+                                                <div class="form-text">Use this option to bypass cached data and get the latest information from the API.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-center mt-3">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-bar-chart-fill"></i> Generate Alliance Analysis
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <!-- Nation Analysis Form -->
+                            <div class="tab-pane fade" id="nation-form" role="tabpanel" aria-labelledby="nation-tab">
+                                <form th:action="@{/nation/analyze}" method="post">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="nationId" class="form-label">Nation ID</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="nationId" name="nationId" 
+                                                           placeholder="Enter nation ID" required>
+                                                    <button class="btn btn-outline-secondary" type="button" id="nationSearchButton" 
+                                                            data-bs-toggle="modal" data-bs-target="#nationSearchModal">
+                                                        <i class="bi bi-search"></i> Search
+                                                    </button>
+                                                </div>
+                                                <div class="form-text">Enter the ID of the nation you want to analyze.</div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="nationMmrType" class="form-label">MMR Type</label>
+                                                <select class="form-select" id="nationMmrType" name="mmrType">
+                                                    <option value="peacetime" 
+                                                            th:selected="${defaultMmrType != null && defaultMmrType == 'peacetime'}">
+                                                        Peacetime MMR (0/2/5/0)
+                                                    </option>
+                                                    <option value="raid" 
+                                                            th:selected="${defaultMmrType != null && defaultMmrType == 'raid'}">
+                                                        Raid MMR (5/0/0/0)
+                                                    </option>
+                                                    <option value="wartime" 
+                                                            th:selected="${defaultMmrType != null && defaultMmrType == 'wartime'}">
+                                                        Wartime MMR (5/5/5/3)
+                                                    </option>
+                                                    <option value="custom" 
+                                                            th:selected="${defaultMmrType != null && defaultMmrType == 'custom'}"
+                                                            th:if="${customMmrEnabled}">
+                                                        <span th:text="${customMmrName != null ? customMmrName : 'Custom MMR'}"></span>
+                                                    </option>
+                                                </select>
+                                                <div class="form-text">Select the MMR type to check compliance against.</div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="optimizationTarget" class="form-label">Optimization Target</label>
+                                                <select class="form-select" id="optimizationTarget" name="optimizationTarget">
+                                                    <option value="revenue">Maximize Revenue</option>
+                                                    <option value="food">Maximize Food Production</option>
+                                                    <option value="steel">Maximize Steel Production</option>
+                                                    <option value="aluminum">Maximize Aluminum Production</option>
+                                                    <option value="gasoline">Maximize Gasoline Production</option>
+                                                    <option value="munitions">Maximize Munitions Production</option>
+                                                </select>
+                                                <div class="form-text">What to prioritize when generating optimal builds.</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="card mb-3">
+                                                <div class="card-header">Analysis Options</div>
+                                                <div class="card-body">
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="checkbox" id="generateOptimalBuilds" name="generateOptimalBuilds" checked>
+                                                        <label class="form-check-label" for="generateOptimalBuilds">Generate Optimal City Builds</label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="checkbox" id="includeNationResourceAnalysis" name="includeResourceAnalysis" checked>
+                                                        <label class="form-check-label" for="includeNationResourceAnalysis">Include Resource Analysis</label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="checkbox" id="includeNationFinancialAnalysis" name="includeFinancialAnalysis" checked>
+                                                        <label class="form-check-label" for="includeNationFinancialAnalysis">Include Financial Analysis</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="includeProjectRecommendations" name="includeProjectRecommendations" checked>
+                                                        <label class="form-check-label" for="includeProjectRecommendations">Include Project Recommendations</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-check mb-3">
+                                                <input class="form-check-input" type="checkbox" id="nationSkipCache" name="skipCache">
+                                                <label class="form-check-label" for="nationSkipCache">Skip cache and fetch fresh data</label>
+                                                <div class="form-text">Use this option to bypass cached data and get the latest information from the API.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-center mt-3">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-file-earmark-bar-graph-fill"></i> Generate Nation Analysis
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <!-- City Build Optimizer Form -->
+                            <div class="tab-pane fade" id="city-form" role="tabpanel" aria-labelledby="city-tab">
+                                <form th:action="@{/city/optimize}" method="post">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="targetInfra" class="form-label">Target Infrastructure</label>
+                                                <input type="number" class="form-control" id="targetInfra" name="targetInfra" 
+                                                       th:value="${defaultTargetInfra != null ? defaultTargetInfra : 1750}" 
+                                                       min="100" step="50" required>
+                                                <div class="form-text">Target infrastructure level for city optimization.</div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="targetLand" class="form-label">Target Land</label>
+                                                <input type="number" class="form-control" id="targetLand" name="targetLand" 
+                                                       value="2000" min="100" step="10" required>
+                                                <div class="form-text">Target land amount for city optimization.</div>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <label for="cityMmrType" class="form-label">MMR Type</label>
+                                                <select class="form-select" id="cityMmrType" name="mmrType">
+                                                    <option value="peacetime" 
+                                                            th:selected="${defaultMmrType != null && defaultMmrType == 'peacetime'}">
+                                                        Peacetime MMR (0/2/5/0)
+                                                    </option>
+                                                    <option value="raid" 
+                                                            th:selected="${defaultMmrType != null && defaultMmrType == 'raid'}">
+                                                        Raid MMR (5/0/0/0)
+                                                    </option>
+                                                    <option value="wartime" 
+                                                            th:selected="${defaultMmrType != null && defaultMmrType == 'wartime'}">
+                                                        Wartime MMR (5/5/5/3)
+                                                    </option>
+                                                    <option value="custom" 
+                                                            th:selected="${defaultMmrType != null && defaultMmrType == 'custom'}"
+                                                            th:if="${customMmrEnabled}">
+                                                        <span th:text="${customMmrName != null ? customMmrName : 'Custom MMR'}"></span>
+                                                    </option>
+                                                </select>
+                                                <div class="form-text">MMR type to include in the city build.</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="optimizationType" class="form-label">Optimization Type</label>
+                                                <select class="form-select" id="optimizationType" name="optimizationType">
+                                                    <option value="revenue">Maximize Revenue</option>
+                                                    <option value="food">Maximize Food Production</option>
+                                                    <option value="steel">Maximize Steel Production</option>
+                                                    <option value="aluminum">Maximize Aluminum Production</option>
+                                                    <option value="gasoline">Maximize Gasoline Production</option>
+                                                    <option value="munitions">Maximize Munitions Production</option>
+                                                </select>
+                                                <div class="form-text">What to prioritize when generating the optimal build.</div>
+                                            </div>
+                                            
+                                            <div class="card">
+                                                <div class="card-header">Projects</div>
+                                                <div class="card-body" style="max-height: 200px; overflow-y: auto;">
+                                                    <div class="form-check mb-2" th:each="project : ${availableProjects}" th:if="${availableProjects != null}">
+                                                        <input class="form-check-input" type="checkbox" th:id="${'project-' + project.key}" 
+                                                               th:name="'projects'" th:value="${project.key}">
+                                                        <label class="form-check-label" th:for="${'project-' + project.key}" th:text="${project.value}"></label>
+                                                    </div>
+                                                    <div th:if="${availableProjects == null || #lists.isEmpty(availableProjects)}">
+                                                        <div class="form-check mb-2">
+                                                            <input class="form-check-input" type="checkbox" id="project-mass-irrigation" name="projects" value="mass_irrigation">
+                                                            <label class="form-check-label" for="project-mass-irrigation">Mass Irrigation</label>
+                                                        </div>
+                                                        <div class="form-check mb-2">
+                                                            <input class="form-check-input" type="checkbox" id="project-green-technologies" name="projects" value="green_technologies">
+                                                            <label class="form-check-label" for="project-green-technologies">Green Technologies</label>
+                                                        </div>
+                                                        <div class="form-check mb-2">
+                                                            <input class="form-check-input" type="checkbox" id="project-clinical-research-center" name="projects" value="clinical_research_center">
+                                                            <label class="form-check-label" for="project-clinical-research-center">Clinical Research Center</label>
+                                                        </div>
+                                                        <div class="form-check mb-2">
+                                                            <input class="form-check-input" type="checkbox" id="project-specialized-police-training" name="projects" value="specialized_police_training">
+                                                            <label class="form-check-label" for="project-specialized-police-training">Specialized Police Training</label>
+                                                        </div>
+                                                        <div class="form-check mb-2">
+                                                            <input class="form-check-input" type="checkbox" id="project-telecommunications-satellite" name="projects" value="telecommunications_satellite">
+                                                            <label class="form-check-label" for="project-telecommunications-satellite">Telecommunications Satellite</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3 mt-3">
+                                        <label for="domesticPolicy" class="form-label">Domestic Policy</label>
+                                        <select class="form-select" id="domesticPolicy" name="domesticPolicy">
+                                            <option value="">None/Default</option>
+                                            <option value="Urbanization">Urbanization</option>
+                                            <option value="Rural Development">Rural Development</option>
+                                            <option value="Technological Advancement">Technological Advancement</option>
+                                            <option value="Manufacturing Focus">Manufacturing Focus</option>
+                                            <option value="Austerity">Austerity</option>
+                                            <option value="Open Markets">Open Markets</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="text-center mt-3">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-building-fill-gear"></i> Generate Optimal City Build
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features Section -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <h4 class="text-center mb-4">PnW Analyzer Features</h4>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card form-card h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">
+                            <i class="bi bi-bar-chart-line-fill"></i>
+                        </div>
+                        <h5>Alliance Analysis</h5>
+                        <p>Comprehensive alliance-wide analysis including MMR compliance, resource production, and financial metrics for all member nations.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card form-card h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">
+                            <i class="bi bi-building-fill-check"></i>
+                        </div>
+                        <h5>City Optimization</h5>
+                        <p>Generate optimal city builds based on your infrastructure, land, projects, and policy to maximize revenue or resource production.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card form-card h-100">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">
+                            <i class="bi bi-shield-fill-check"></i>
+                        </div>
+                        <h5>MMR Compliance</h5>
+                        <p>Check if your nations meet military readiness requirements and calculate the cost to bring non-compliant nations into compliance.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alliance Search Modal -->
+    <div class="modal fade" id="allianceSearchModal" tabindex="-1" aria-labelledby="allianceSearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="allianceSearchModalLabel">Search for Alliance</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="allianceSearchInput" placeholder="Search by alliance name or acronym">
+                        <button class="btn btn-primary" type="button" id="searchAllianceButton">Search</button>
+                    </div>
+                    
+                    <div id="allianceSearchResults" class="d-none">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Acronym</th>
+                                        <th>Members</th>
+                                        <th>Score</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="allianceResultsBody">
+                                    <!-- Results will be inserted here via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div id="allianceSearchLoading" class="text-center d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Searching for alliances...</p>
+                    </div>
+                    
+                    <div id="allianceSearchNoResults" class="alert alert-info d-none">
+                        No alliances found matching your search.
+                    </div>
+                    
+                    <div id="allianceSearchError" class="alert alert-danger d-none">
+                        Error searching for alliances. Please try again.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="nationSearchModal" tabindex="-1" aria-labelledby="nationSearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="nationSearchModalLabel">Search for Nation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="nationSearchInput" placeholder="Search by nation name or leader name">
+                        <button class="btn btn-primary" type="button" id="searchNationButton">Search</button>
+                    </div>
+                    
+                    <div id="nationSearchResults" class="d-none">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nation</th>
+                                        <th>Leader</th>
+                                        <th>Cities</th>
+                                        <th>Score</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="nationResultsBody">
+                                    <!-- Results will be inserted here via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div id="nationSearchLoading" class="text-center d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Searching for nations...</p>
+                    </div>
+                    
+                    <div id="nationSearchNoResults" class="alert alert-info d-none">
+                        No nations found matching your search.
+                    </div>
+                    
+                    <div id="nationSearchError" class="alert alert-danger d-none">
+                        Error searching for nations. Please try again.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light py-3 mt-4">
+        <div class="container text-center">
+            <p class="mb-0">PnW Analyzer - Politics &amp; War Data Analysis Tool</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Alliance search functionality
+            const searchAllianceButton = document.getElementById('searchAllianceButton');
+            const allianceSearchInput = document.getElementById('allianceSearchInput');
+            
+            if (searchAllianceButton && allianceSearchInput) {
+                searchAllianceButton.addEventListener('click', function() {
+                    const searchTerm = allianceSearchInput.value.trim();
+                    if (searchTerm.length < 2) {
+                        alert('Please enter at least 2 characters to search.');
+                        return;
+                    }
+                    
+                    document.getElementById('allianceSearchResults').classList.add('d-none');
+                    document.getElementById('allianceSearchNoResults').classList.add('d-none');
+                    document.getElementById('allianceSearchError').classList.add('d-none');
+                    document.getElementById('allianceSearchLoading').classList.remove('d-none');
+                    
+                    // Simulate API call with mock data for demonstration
+                    setTimeout(() => {
+                        document.getElementById('allianceSearchLoading').classList.add('d-none');
+                        
+                        // Mock data - in real implementation, this would come from the API
+                        const mockResults = [
+                            { id: 1, name: 'The Knights Radiant', acronym: 'TKR', members: 28, score: 125043.21 },
+                            { id: 2, name: 'The Fighting Knights', acronym: 'TFK', members: 15, score: 78123.45 },
+                            { id: 3, name: 'Knights of the Round Table', acronym: 'KRT', members: 42, score: 256789.12 }
+                        ];
+                        
+                        const resultsBody = document.getElementById('allianceResultsBody');
+                        resultsBody.innerHTML = '';
+                        
+                        if (mockResults.length > 0) {
+                            mockResults.forEach(alliance => {
+                                resultsBody.innerHTML += `
+                                    <tr>
+                                        <td>${alliance.id}</td>
+                                        <td>${alliance.name}</td>
+                                        <td>${alliance.acronym}</td>
+                                        <td>${alliance.members}</td>
+                                        <td>${alliance.score.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary select-alliance-btn" data-id="${alliance.id}">
+                                                Select
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            });
+                            
+                            document.getElementById('allianceSearchResults').classList.remove('d-none');
+                            
+                            // Add event listeners to select buttons
+                            document.querySelectorAll('.select-alliance-btn').forEach(button => {
+                                button.addEventListener('click', function() {
+                                    document.getElementById('allianceId').value = this.dataset.id;
+                                    bootstrap.Modal.getInstance(document.getElementById('allianceSearchModal')).hide();
+                                });
+                            });
+                        } else {
+                            document.getElementById('allianceSearchNoResults').classList.remove('d-none');
+                        }
+                    }, 1000);
+                });
+                
+                // Allow Enter key in search input
+                allianceSearchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        searchAllianceButton.click();
+                    }
+                });
+            }
+            
+            // Nation search functionality
+            const searchNationButton = document.getElementById('searchNationButton');
+            const nationSearchInput = document.getElementById('nationSearchInput');
+            
+            if (searchNationButton && nationSearchInput) {
+                searchNationButton.addEventListener('click', function() {
+                    const searchTerm = nationSearchInput.value.trim();
+                    if (searchTerm.length < 2) {
+                        alert('Please enter at least 2 characters to search.');
+                        return;
+                    }
+                    
+                    document.getElementById('nationSearchResults').classList.add('d-none');
+                    document.getElementById('nationSearchNoResults').classList.add('d-none');
+                    document.getElementById('nationSearchError').classList.add('d-none');
+                    document.getElementById('nationSearchLoading').classList.remove('d-none');
+                    
+                    // Simulate API call with mock data for demonstration
+                    setTimeout(() => {
+                        document.getElementById('nationSearchLoading').classList.add('d-none');
+                        
+                        // Mock data - in real implementation, this would come from the API
+                        const mockResults = [
+                            { id: 101, name: 'Alethkar', leader: 'Dalinar', cities: 12, score: 5123.45 },
+                            { id: 102, name: 'Roshar', leader: 'Kaladin', cities: 8, score: 3789.12 },
+                            { id: 103, name: 'Kholinar', leader: 'Adolin', cities: 16, score: 8456.78 }
+                        ];
+                        
+                        const resultsBody = document.getElementById('nationResultsBody');
+                        resultsBody.innerHTML = '';
+                        
+                        if (mockResults.length > 0) {
+                            mockResults.forEach(nation => {
+                                resultsBody.innerHTML += `
+                                    <tr>
+                                        <td>${nation.id}</td>
+                                        <td>${nation.name}</td>
+                                        <td>${nation.leader}</td>
+                                        <td>${nation.cities}</td>
+                                        <td>${nation.score.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary select-nation-btn" data-id="${nation.id}">
+                                                Select
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            });
+                            
+                            document.getElementById('nationSearchResults').classList.remove('d-none');
+                            
+                            // Add event listeners to select buttons
+                            document.querySelectorAll('.select-nation-btn').forEach(button => {
+                                button.addEventListener('click', function() {
+                                    document.getElementById('nationId').value = this.dataset.id;
+                                    bootstrap.Modal.getInstance(document.getElementById('nationSearchModal')).hide();
+                                });
+                            });
+                        } else {
+                            document.getElementById('nationSearchNoResults').classList.remove('d-none');
+                        }
+                    }, 1000);
+                });
+                
+                // Allow Enter key in search input
+                nationSearchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        searchNationButton.click();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

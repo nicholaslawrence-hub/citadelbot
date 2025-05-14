@@ -69,7 +69,6 @@ public class NationOptimizer {
         
         List<Map<String, Object>> cityAnalysisResults = new ArrayList<>();
         
-        // National aggregation variables
         double nationalBasePopulationIncome = 0.0;
         double nationalOpenMarketsBonus = 0.0;
         double nationalAllianceTreasureBonus = 0.0;

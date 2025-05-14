@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nation Analysis - PnW Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .improvement-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 5px;
+        }
+        .resource-positive { color: #28a745; }
+        .resource-negative { color: #dc3545; }
+        .nav-pills .nav-link.active { background-color: #6f42c1; }
+        .city-badge {
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            padding: 5px;
+            background: #6f42c1;
+            color: white;
+            text-align: center;
+            font-size: 12px;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .build-template {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                <li class="breadcrumb-item"><a th:href="@{'/alliance/analyze/' + ${nation.allianceId} + '?mmrType=' + ${mmrType}}">Alliance</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Nation Analysis</li>
+            </ol>
+        </nav>
+
+        <!-- Nation Summary -->
+        <div class="card mb-4" th:if="${nation != null}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">
+                    <span th:text="${nation.nationName}"></span>
+                    <span class="badge" th:style="'background-color:' + ${nation.color}" th:if="${nation.color != null}">&nbsp;</span>
+                </h3>
+                <span class="badge bg-primary" th:text="'Score: ' + ${#numbers.formatDecimal(nation.score, 0, 'COMMA', 0, 'POINT')}"></span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h5>Nation Overview</h5>
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Nation ID
+                                    <span th:text="${nation.id}"></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Leader
+                                    <span th:text="${nation.leaderName}"></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Cities
+                                    <span th:text="${nation.numCities}"></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Last Active
+                                    <span th:text="${nation.lastActive != null ? #temporals.format(nation.lastActive, 'yyyy-MM-dd HH:mm') : 'Unknown'}"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <h5>Nation Stats</h5>
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Domestic Policy
+                                    <span th:text="${nation.domesticPolicy}"></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    War Policy
+                                    <span th:text="${nation.warPolicy}"></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Total Revenue
+                                    <span th:text="'$' + ${#numbers.formatDecimal(nationAnalysis.overallNationalRevenue, 0, 'COMMA', 2, 'POINT')}"></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    MMR Compliance
+                                    <span th:class="${nationAnalysis.nationMmrCompliant ? 'badge bg-success' : 'badge bg-danger'}"
+                                          th:text="${nationAnalysis.nationMmrCompliant ? 'Compliant' : 'Non-Compliant'}"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Military Units -->
+        <div class="card mb-4" th:if="${nationAnalysis != null}">
+            <div class="card-header">
+                <h4>Military Units</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Unit Type</th>
+                                    <th>Count</th>
+                                    <th>Daily Upkeep</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="unit : ${militaryUnits.entrySet()}">
+                                    <td th:text="${#strings.capitalize(unit.key)}"></td>
+                                    <td th:text="${#numbers.formatDecimal(unit.value, 0, 'COMMA', 0, 'POINT')}"></td>
+                                    <td th:if="${unitUpkeep.containsKey(unit.key)}" 
+                                        th:text="'$' + ${#numbers.formatDecimal(unit.value * unitUpkeep.get(unit.key), 0, 'COMMA', 2, 'POINT')}"></td>
+                                    <td th:unless="${unitUpkeep.containsKey(unit.key)}">-</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="2">Total Military Upkeep</th>
+                                    <th th:text="'$' + ${#numbers.formatDecimal(nationAnalysis.nationalMilitaryUpkeep, 0, 'COMMA', 2, 'POINT')}"></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="col-lg-6">
+                        <h5>Projects</h5>
+                        <div class="row">
+                            <div class="col-md-6" th:each="project : ${projectsStatus.entrySet()}">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" disabled th:checked="${project.value}" th:id="${'project-' + project.key}">
+                                    <label class="form-check-label" th:for="${'project-' + project.key}" th:text="${project.key}"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resource Analysis -->
+        <div class="card mb-4" th:if="${nationAnalysis != null}">
+            <div class="card-header">
+                <h4>Resource Analysis</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Resource</th>
+                                <th>Production</th>
+                                <th>Usage</th>
+                                <th>Net</th>
+                                <th>Price</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="resource : ${resourceAnalysis}">
+                                <td th:text="${#strings.capitalize(resource.name)}"></td>
+                                <td th:text="${#numbers.formatDecimal(resource.production, 0, 'COMMA', 2, 'POINT')}"></td>
+                                <td th:text="${#numbers.formatDecimal(resource.usage, 0, 'COMMA', 2, 'POINT')}"></td>
+                                <td th:class="${resource.net >= 0 ? 'resource-positive' : 'resource-negative'}"
+                                    th:text="${#numbers.formatDecimal(resource.net, 0, 'COMMA', 2, 'POINT')}"></td>
+                                <td th:text="'$' + ${#numbers.formatDecimal(resource.price, 0, 'COMMA', 2, 'POINT')}"></td>
+                                <td th:text="'$' + ${#numbers.formatDecimal(resource.value, 0, 'COMMA', 2, 'POINT')}"></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="5">Total Resource Value</th>
+                                <th th:text="'$' + ${#numbers.formatDecimal(nationAnalysis.nationalTotalResourceValue, 0, 'COMMA', 2, 'POINT')}"></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- City Analysis Tabs -->
+        <div class="card mb-4" th:if="${not #lists.isEmpty(cityAnalyses)}">
+            <div class="card-header">
+                <h4>City Analysis</h4>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-pills mb-3" id="cityTabs" role="tablist">
+                    <li class="nav-item" role="presentation" th:each="city, cityStat : ${cityAnalyses}">
+                        <button class="nav-link" th:class="${cityStat.index == 0 ? 'nav-link active' : 'nav-link'}" 
+                                th:id="${'city-tab-' + city.city_id}" 
+                                data-bs-toggle="pill" 
+                                th:data-bs-target="${'#city-content-' + city.city_id}" 
+                                type="button" role="tab" 
+                                th:aria-controls="${'city-content-' + city.city_id}" 
+                                th:aria-selected="${cityStat.index == 0 ? 'true' : 'false'}">
+                            <span class="city-badge" th:text="${cityStat.count}"></span>
+                            <span th:text="${city.city_name}"></span>
+                            <span th:class="${city.mmr_status.compliant ? 'badge bg-success ms-1' : 'badge bg-danger ms-1'}" 
+                                  th:text="${city.mmr_status.compliant ? 'MMR ✓' : 'MMR ✗'}"></span>
+                        </button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="cityTabsContent">
+                    <div class="tab-pane fade" th:class="${cityStat.index == 0 ? 'tab-pane fade show active' : 'tab-pane fade'}" 
+                         th:id="${'city-content-' + city.city_id}" 
+                         role="tabpanel" 
+                         th:aria-labelledby="${'city-tab-' + city.city_id}" 
+                         th:each="city, cityStat : ${cityAnalyses}">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>City Information</h5>
+                                <ul class="list-group mb-3">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Infrastructure
+                                        <span th:text="${#numbers.formatDecimal(city.infrastructure, 0, 'COMMA', 2, 'POINT')}"></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Land
+                                        <span th:text="${#numbers.formatDecimal(city.land, 0, 'COMMA', 2, 'POINT')}"></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Power Status
+                                        <span th:class="${city.powered ? 'badge bg-success' : 'badge bg-danger'}"
+                                              th:text="${city.powered ? 'Powered' : 'No Power'}"></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Population
+                                        <span th:text="${#numbers.formatDecimal(city.population, 0, 'COMMA', 0, 'POINT')}"></span>
+                                    </li>
+                                </ul>
+
+                                <h5>Economics</h5>
+                                <ul class="list-group mb-3">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Commerce Rate
+                                        <span th:text="${#numbers.formatDecimal(city.commerce_rate, 0, 'COMMA', 2, 'POINT')} + '%'"></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Disease Rate
+                                        <span th:text="${#numbers.formatDecimal(city.disease_rate_percentage, 0, 'COMMA', 2, 'POINT')} + '%'"></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Crime Rate
+                                        <span th:text="${#numbers.formatDecimal(city.crime_rate_percentage, 0, 'COMMA', 2, 'POINT')} + '%'"></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Pollution
+                                        <span th:text="${#numbers.formatDecimal(city.pollution, 0, 'COMMA', 2, 'POINT')}"></span>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h5>Financial Summary</h5>
+                                <ul class="list-group mb-3">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Population Income
+                                        <span th:text="'$' + ${#numbers.formatDecimal(city.base_population_income, 0, 'COMMA', 2, 'POINT')}"></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Improvement Upkeep
+                                        <span th:text="'$' + ${#numbers.formatDecimal(city.improvement_upkeep, 0, 'COMMA', 2, 'POINT')}"></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Net Monetary Income
+                                        <span th:text="'$' + ${#numbers.formatDecimal(city.net_monetary_income_city, 0, 'COMMA', 2, 'POINT')}"></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Resource Value
+                                        <span th:text="'$' + ${#numbers.formatDecimal(city.total_net_resource_value, 0, 'COMMA', 2, 'POINT')}"></span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <strong>Total Revenue</strong>
+                                        <strong th:text="'$' + ${#numbers.formatDecimal(city.total_revenue_city, 0, 'COMMA', 2, 'POINT')}"></strong>
+                                    </li>
+                                </ul>
+
+                                <!-- MMR Status -->
+                                <div th:if="${!city.mmr_status.compliant}" class="alert alert-danger">
+                                    <h5>MMR Non-Compliant</h5>
+                                    <p>Missing improvements for <strong th:text="${city.mmr_status.mmr_type}"></strong>:</p>
+                                    <ul>
+                                        <li th:each="missing : ${city.mmr_status.missing_improvements.entrySet()}">
+                                            <span th:text="${#strings.capitalize(missing.key)}"></span>: 
+                                            <span th:text="${missing.value}"></span>
+                                        </li>
+                                    </ul>
+                                    <p>Estimated cost to comply: <strong th:text="'$' + ${#numbers.formatDecimal(city.mmr_status.total_cost, 0, 'COMMA', 2, 'POINT')}"></strong></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Current Improvements -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h5>Current Improvements</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th>Improvement</th>
+                                                <th>Count</th>
+                                                <th>Upkeep</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="imp : ${city.improvements.entrySet()}" th:if="${imp.value > 0}">
+                                                <td th:text="${#strings.capitalize(imp.key)}"></td>
+                                                <td th:text="${imp.value}"></td>
+                                                <td th:if="${improvementDetails.containsKey(imp.key)}" 
+                                                    th:text="'$' + ${#numbers.formatDecimal(imp.value * improvementDetails.get(imp.key).upkeep, 0, 'COMMA', 2, 'POINT')}"></td>
+                                                <td th:unless="${improvementDetails.containsKey(imp.key)}">-</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Optimal Build -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <h5>Optimal City Build</h5>
+                                <div class="card">
+                                    <div class="card-header">
+                                        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link active" id="build-tab" data-bs-toggle="tab" 
+                                                        th:data-bs-target="${'#build-' + city.city_id}" type="button" role="tab" 
+                                                        aria-controls="build" aria-selected="true">Optimal Build</button>
+                                            </li>
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link" id="template-tab" data-bs-toggle="tab" 
+                                                        th:data-bs-target="${'#template-' + city.city_id}" type="button" role="tab" 
+                                                        aria-controls="template" aria-selected="false">Template Format</button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="tab-content">
+                                            <div class="tab-pane fade show active" th:id="${'build-' + city.city_id}" role="tabpanel" aria-labelledby="build-tab">
+                                                <div class="row" th:if="${optimalBuilds.containsKey(city.city_id)}">
+                                                    <div class="col-md-6">
+                                                        <h6>Build Details</h6>
+                                                        <ul class="list-group mb-3">
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                Target Infrastructure
+                                                                <span th:text="${optimalBuilds.get(city.city_id).target_infra}"></span>
+                                                            </li>
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                Target Land
+                                                                <span th:text="${optimalBuilds.get(city.city_id).target_land}"></span>
+                                                            </li>
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                MMR Type
+                                                                <span th:text="${optimalBuilds.get(city.city_id).mmr_type}"></span>
+                                                            </li>
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                Max Improvement Slots
+                                                                <span th:text="${optimalBuilds.get(city.city_id).max_improvement_slots}"></span>
+                                                            </li>
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                Used Slots
+                                                                <span th:text="${optimalBuilds.get(city.city_id).total_improvements_built}"></span>
+                                                            </li>
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                Unused Slots
+                                                                <span th:text="${optimalBuilds.get(city.city_id).unused_slots}"></span>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6>Projected Financials</h6>
+                                                        <ul class="list-group mb-3">
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                Projected Population
+                                                                <span th:text="${#numbers.formatDecimal(optimalBuilds.get(city.city_id).population, 0, 'COMMA', 0, 'POINT')}"></span>
+                                                            </li>
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                Commerce Rate
+                                                                <span th:text="${#numbers.formatDecimal(optimalBuilds.get(city.city_id).commerce_rate, 0, 'COMMA', 2, 'POINT')} + '%'"></span>
+                                                            </li>
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                Gross Income
+                                                                <span th:text="'$' + ${#numbers.formatDecimal(optimalBuilds.get(city.city_id).gross_monetary_income, 0, 'COMMA', 2, 'POINT')}"></span>
+                                                            </li>
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                Resource Value
+                                                                <span th:text="'$' + ${#numbers.formatDecimal(optimalBuilds.get(city.city_id).total_net_resource_value, 0, 'COMMA', 2, 'POINT')}"></span>
+                                                            </li>
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                <strong>Total Projected Revenue</strong>
+                                                                <strong th:text="'$' + ${#numbers.formatDecimal(optimalBuilds.get(city.city_id).total_revenue_city, 0, 'COMMA', 2, 'POINT')}"></strong>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                    
+                                                    <div class="col-12 mt-3">
+                                                        <h6>Optimal Improvements</h6>
+                                                        <div class="table-responsive">
+                                                            <table class="table table-sm table-bordered">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Improvement</th>
+                                                                        <th>Count</th>
+                                                                        <th>Current</th>
+                                                                        <th>Difference</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr th:each="imp : ${optimalBuilds.get(city.city_id).build.entrySet()}">
+                                                                        <td th:text="${#strings.capitalize(imp.key)}"></td>
+                                                                        <td th:text="${imp.value}"></td>
+                                                                        <td th:text="${city.improvements.getOrDefault(imp.key, 0)}"></td>
+                                                                        <td th:class="${imp.value - city.improvements.getOrDefault(imp.key, 0) > 0 ? 'text-success' : (imp.value - city.improvements.getOrDefault(imp.key, 0) < 0 ? 'text-danger' : '')}"
+                                                                            th:text="${imp.value - city.improvements.getOrDefault(imp.key, 0)}"></td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="alert alert-info" th:unless="${optimalBuilds.containsKey(city.city_id)}">
+                                                    No optimal build available for this city.
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane fade" th:id="${'template-' + city.city_id}" role="tabpanel" aria-labelledby="template-tab">
+                                                <div th:if="${optimalBuilds.containsKey(city.city_id) && optimalBuilds.get(city.city_id).template_format != null}">
+                                                    <p>Copy and paste this template into the game:</p>
+                                                    <div class="build-template" 
+                                                         th:text="${#strings.replace(#strings.replace(#strings.replace(optimalBuilds.get(city.city_id).template_format.toString(), '{', ''), '}', ''), ',', '\n')}"></div>
+                                                    <button class="btn btn-primary mt-2" onclick="copyTemplate(this)">Copy to Clipboard</button>
+                                                </div>
+                                                <div class="alert alert-info" 
+                                                    th:unless="${optimalBuilds.containsKey(city.city_id) && optimalBuilds.get(city.city_id).template_format != null}">
+                                                    No template format available for this city.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Download Reports -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>Download Reports</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <a th:href="@{'/nation/report/' + ${nation.id} + '/csv?mmrType=' + ${mmrType}}" class="btn btn-success w-100">
+                            <i class="bi bi-file-earmark-excel"></i> Download CSV Report
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a th:href="@{'/nation/report/' + ${nation.id} + '/json?mmrType=' + ${mmrType}}" class="btn btn-primary w-100">
+                            <i class="bi bi-file-earmark-code"></i> Download JSON Report
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a th:href="@{'/nation/report/' + ${nation.id} + '/optimal-builds?mmrType=' + ${mmrType}}" class="btn btn-warning w-100">
+                            <i class="bi bi-building"></i> Download Optimal Builds
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light py-3 mt-4">
+        <div class="container text-center">
+            <p class="mb-0">PnW Analyzer - Politics &amp; War Data Analysis Tool</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function copyTemplate(button) {
+            const template = button.previousElementSibling.textContent;
+            navigator.clipboard.writeText(template)
+                .then(() => {
+                    const originalText = button.textContent;
+                    button.textContent = 'Copied!';
+                    button.classList.add('btn-success');
+                    button.classList.remove('btn-primary');
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.classList.remove('btn-success');
+                        button.classList.add('btn-primary');
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert('Failed to copy to clipboard. Please try again.');
+                });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - PnW Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .nav-pills .nav-link.active { background-color: #6f42c1; }
+        .settings-icon { font-size: 1.5rem; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Settings</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h4>Settings Menu</h4>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="nav flex-column nav-pills" id="settings-tab" role="tablist" aria-orientation="vertical">
+                            <button class="nav-link active text-start py-3 px-4" id="api-tab" data-bs-toggle="pill" data-bs-target="#api-settings" type="button" role="tab" aria-controls="api-settings" aria-selected="true">
+                                <i class="bi bi-key-fill settings-icon"></i> API Configuration
+                            </button>
+                            <button class="nav-link text-start py-3 px-4" id="analysis-tab" data-bs-toggle="pill" data-bs-target="#analysis-settings" type="button" role="tab" aria-controls="analysis-settings" aria-selected="false">
+                                <i class="bi bi-gear-fill settings-icon"></i> Analysis Settings
+                            </button>
+                            <button class="nav-link text-start py-3 px-4" id="display-tab" data-bs-toggle="pill" data-bs-target="#display-settings" type="button" role="tab" aria-controls="display-settings" aria-selected="false">
+                                <i class="bi bi-display-fill settings-icon"></i> Display Preferences
+                            </button>
+                            <button class="nav-link text-start py-3 px-4" id="resource-tab" data-bs-toggle="pill" data-bs-target="#resource-settings" type="button" role="tab" aria-controls="resource-settings" aria-selected="false">
+                                <i class="bi bi-cash-coin settings-icon"></i> Resource Prices
+                            </button>
+                            <button class="nav-link text-start py-3 px-4" id="mmr-tab" data-bs-toggle="pill" data-bs-target="#mmr-settings" type="button" role="tab" aria-controls="mmr-settings" aria-selected="false">
+                                <i class="bi bi-shield-fill settings-icon"></i> MMR Templates
+                            </button>
+                            <button class="nav-link text-start py-3 px-4" id="backup-tab" data-bs-toggle="pill" data-bs-target="#backup-settings" type="button" role="tab" aria-controls="backup-settings" aria-selected="false">
+                                <i class="bi bi-cloud-arrow-up-fill settings-icon"></i> Backup & Restore
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                <div class="tab-content" id="settings-tabContent">
+                    <!-- API Settings Tab -->
+                    <div class="tab-pane fade show active" id="api-settings" role="tabpanel" aria-labelledby="api-tab">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>API Configuration</h4>
+                            </div>
+                            <div class="card-body">
+                                <form th:action="@{/settings/api}" method="post">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle-fill"></i> To use this application, you need a Politics & War API key.
+                                        You can get one from the <a href="https://politicsandwar.com/api/create-key" target="_blank">Politics & War API page</a>.
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="apiKey" class="form-label">API Key</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="apiKey" name="apiKey" th:value="${apiConfig != null ? apiConfig.apiKey : ''}" required>
+                                            <button class="btn btn-outline-secondary" type="button" id="toggleApiKey">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="form-text">Enter your Politics & War API Key.</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="apiRequestLimit" class="form-label">API Request Limit</label>
+                                        <input type="number" class="form-control" id="apiRequestLimit" name="apiRequestLimit" 
+                                               th:value="${apiConfig != null ? apiConfig.requestLimit : 50}" min="1" required>
+                                        <div class="form-text">Maximum API requests per minute.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="cachingEnabled" name="cachingEnabled" 
+                                               th:checked="${apiConfig != null && apiConfig.cachingEnabled}">
+                                        <label class="form-check-label" for="cachingEnabled">Enable API Response Caching</label>
+                                        <div class="form-text">Caching reduces API calls by saving responses for a period of time.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="cacheDuration" class="form-label">Cache Duration (minutes)</label>
+                                        <input type="number" class="form-control" id="cacheDuration" name="cacheDuration" 
+                                               th:value="${apiConfig != null ? apiConfig.cacheDuration : 30}" min="1">
+                                        <div class="form-text">How long to cache API responses before refetching.</div>
+                                    </div>
+                                    
+                                    <div class="text-end">
+                                        <button type="button" class="btn btn-secondary me-2" id="testApiButton">Test API Connection</button>
+                                        <button type="submit" class="btn btn-primary">Save API Settings</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Settings Tab -->
+                    <div class="tab-pane fade" id="analysis-settings" role="tabpanel" aria-labelledby="analysis-tab">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Analysis Settings</h4>
+                            </div>
+                            <div class="card-body">
+                                <form th:action="@{/settings/analysis}" method="post">
+                                    <div class="mb-3">
+                                        <label for="defaultMmrType" class="form-label">Default MMR Type</label>
+                                        <select class="form-select" id="defaultMmrType" name="defaultMmrType">
+                                            <option value="peacetime" th:selected="${analysisConfig != null && analysisConfig.defaultMmrType == 'peacetime'}">Peacetime MMR (0/2/5/0)</option>
+                                            <option value="raid" th:selected="${analysisConfig != null && analysisConfig.defaultMmrType == 'raid'}">Raid MMR (5/0/0/0)</option>
+                                            <option value="wartime" th:selected="${analysisConfig != null && analysisConfig.defaultMmrType == 'wartime'}">Wartime MMR (5/5/5/3)</option>
+                                            <option value="custom" th:selected="${analysisConfig != null && analysisConfig.defaultMmrType == 'custom'}">Custom MMR</option>
+                                        </select>
+                                        <div class="form-text">Default MMR used for analysis.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="defaultTargetInfra" class="form-label">Default Target Infrastructure</label>
+                                        <input type="number" class="form-control" id="defaultTargetInfra" name="defaultTargetInfra" 
+                                               th:value="${analysisConfig != null ? analysisConfig.defaultTargetInfra : 1750}" min="100" step="50">
+                                        <div class="form-text">Default infrastructure level for city optimization.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="useStaticPrices" class="form-label">Resource Price Source</label>
+                                        <select class="form-select" id="useStaticPrices" name="useStaticPrices">
+                                            <option value="api" th:selected="${analysisConfig != null && !analysisConfig.useStaticPrices}">Live API Prices</option>
+                                            <option value="static" th:selected="${analysisConfig != null && analysisConfig.useStaticPrices}">Custom Static Prices</option>
+                                        </select>
+                                        <div class="form-text">Where to get resource prices for revenue calculations.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="includeTradeBlocBonus" name="includeTradeBlocBonus" 
+                                               th:checked="${analysisConfig != null && analysisConfig.includeTradeBlocBonus}">
+                                        <label class="form-check-label" for="includeTradeBlocBonus">Include Trade Bloc Bonus in Calculations</label>
+                                        <div class="form-text">Whether to factor in color trade bloc bonuses in revenue estimates.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="includeAllianceBonuses" name="includeAllianceBonuses" 
+                                               th:checked="${analysisConfig != null && analysisConfig.includeAllianceBonuses}">
+                                        <label class="form-check-label" for="includeAllianceBonuses">Include Alliance Treasure Bonus</label>
+                                        <div class="form-text">Whether to include the alliance treasure bonus in calculations.</div>
+                                    </div>
+                                    
+                                    <div class="text-end">
+                                        <button type="submit" class="btn btn-primary">Save Analysis Settings</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Display Settings Tab -->
+                    <div class="tab-pane fade" id="display-settings" role="tabpanel" aria-labelledby="display-tab">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Display Preferences</h4>
+                            </div>
+                            <div class="card-body">
+                                <form th:action="@{/settings/display}" method="post">
+                                    <div class="mb-3">
+                                        <label for="theme" class="form-label">Application Theme</label>
+                                        <select class="form-select" id="theme" name="theme">
+                                            <option value="light" th:selected="${displayConfig != null && displayConfig.theme == 'light'}">Light</option>
+                                            <option value="dark" th:selected="${displayConfig != null && displayConfig.theme == 'dark'}">Dark</option>
+                                            <option value="system" th:selected="${displayConfig != null && displayConfig.theme == 'system'}">System Default</option>
+                                        </select>
+                                        <div class="form-text">Color theme for the application.</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="dateFormat" class="form-label">Date Format</label>
+                                        <select class="form-select" id="dateFormat" name="dateFormat">
+                                            <option value="MM/dd/yyyy" th:selected="${displayConfig != null && displayConfig.dateFormat == 'MM/dd/yyyy'}">MM/DD/YYYY (US)</option>
+                                            <option value="dd/MM/yyyy" th:selected="${displayConfig != null && displayConfig.dateFormat == 'dd/MM/yyyy'}">DD/MM/YYYY (EU)</option>
+                                            <option value="yyyy-MM-dd" th:selected="${displayConfig != null && displayConfig.dateFormat == 'yyyy-MM-dd'}">YYYY-MM-DD (ISO)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="numberFormat" class="form-label">Number Format</label>
+                                        <select class="form-select" id="numberFormat" name="numberFormat">
+                                            <option value="us" th:selected="${displayConfig != null && displayConfig.numberFormat == 'us'}">US (1,234.56)</option>
+                                            <option value="eu" th:selected="${displayConfig != null && displayConfig.numberFormat == 'eu'}">EU (1.234,56)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="tablePagination" class="form-label">Data Table Pagination</label>
+                                        <select class="form-select" id="tablePagination" name="tablePagination">
+                                            <option value="10" th:selected="${displayConfig != null && displayConfig.tablePagination == 10}">10 entries per page</option>
+                                            <option value="25" th:selected="${displayConfig != null && displayConfig.tablePagination == 25}">25 entries per page</option>
+                                            <option value="50" th:selected="${displayConfig != null && displayConfig.tablePagination == 50}">50 entries per page</option>
+                                            <option value="100" th:selected="${displayConfig != null && displayConfig.tablePagination == 100}">100 entries per page</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="text-end">
+                                        <button type="submit" class="btn btn-primary">Save Display Settings</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Resource Price Settings Tab -->
+                    <div class="tab-pane fade" id="resource-settings" role="tabpanel" aria-labelledby="resource-tab">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Resource Prices</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info mb-3">
+                                    <i class="bi bi-info-circle-fill"></i> These prices are used for revenue calculations when using static prices.
+                                    The current prices from the game API are shown for reference.
+                                </div>
+                                
+                                <form th:action="@{/settings/resources}" method="post">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Resource</th>
+                                                    <th>Current API Price</th>
+                                                    <th>Custom Price</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr th:each="resource : ${resourceNames}">
+                                                    <td th:text="${#strings.capitalize(resource)}"></td>
+                                                    <td th:text="'$' + ${#numbers.formatDecimal(apiPrices.getOrDefault(resource, 0.0), 0, 'COMMA', 2, 'POINT')}"></td>
+                                                    <td>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">$</span>
+                                                            <input type="number" class="form-control" th:id="${'price-' + resource}" th:name="${'price-' + resource}" 
+                                                                   th:value="${customPrices.getOrDefault(resource, apiPrices.getOrDefault(resource, 0.0))}" 
+                                                                   min="0" step="0.01" required>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div class="text-end mt-3">
+                                        <button type="button" class="btn btn-secondary me-2" id="resetToApiPrices">Reset to API Prices</button>
+                                        <button type="submit" class="btn btn-primary">Save Custom Prices</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- MMR Templates Tab -->
+                    <div class="tab-pane fade" id="mmr-settings" role="tabpanel" aria-labelledby="mmr-tab">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>MMR Templates</h4>
+                            </div>
+                            <div class="card-body">
+                                <form th:action="@{/settings/mmr}" method="post">
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <h5>Standard MMR Templates</h5>
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-light">Peacetime MMR (0/2/5/0)</div>
+                                                <div class="card-body">
+                                                    <div class="mb-2">Barracks: 0</div>
+                                                    <div class="mb-2">Factories: 2</div>
+                                                    <div class="mb-2">Hangars: 5</div>
+                                                    <div>Drydocks: 0</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-light">Raid MMR (5/0/0/0)</div>
+                                                <div class="card-body">
+                                                    <div class="mb-2">Barracks: 5</div>
+                                                    <div class="mb-2">Factories: 0</div>
+                                                    <div class="mb-2">Hangars: 0</div>
+                                                    <div>Drydocks: 0</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-light">Wartime MMR (5/5/5/3)</div>
+                                                <div class="card-body">
+                                                    <div class="mb-2">Barracks: 5</div>
+                                                    <div class="mb-2">Factories: 5</div>
+                                                    <div class="mb-2">Hangars: 5</div>
+                                                    <div>Drydocks: 3</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <h5>Custom MMR Template</h5>
+                                            <div class="card">
+                                                <div class="card-header bg-light">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">Template Name</span>
+                                                        <input type="text" class="form-control" id="customMmrName" name="customMmrName" 
+                                                               th:value="${customMmr != null ? customMmr.name : 'Custom'}" required>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="mb-3">
+                                                        <label for="customBarracks" class="form-label">Barracks</label>
+                                                        <input type="number" class="form-control" id="customBarracks" name="customBarracks"
+                                                               th:value="${customMmr != null ? customMmr.barracks : 0}" min="0" max="5" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="customFactories" class="form-label">Factories</label>
+                                                        <input type="number" class="form-control" id="customFactories" name="customFactories"
+                                                               th:value="${customMmr != null ? customMmr.factories : 0}" min="0" max="5" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="customHangars" class="form-label">Hangars</label>
+                                                        <input type="number" class="form-control" id="customHangars" name="customHangars"
+                                                               th:value="${customMmr != null ? customMmr.hangars : 0}" min="0" max="5" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="customDrydocks" class="form-label">Drydocks</label>
+                                                        <input type="number" class="form-control" id="customDrydocks" name="customDrydocks"
+                                                               th:value="${customMmr != null ? customMmr.drydocks : 0}" min="0" max="3" required>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer">
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox" id="customMmrEnabled" name="customMmrEnabled"
+                                                               th:checked="${customMmr != null && customMmr.enabled}">
+                                                        <label class="form-check-label" for="customMmrEnabled">Enable Custom MMR</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-end">
+                                        <button type="submit" class="btn btn-primary">Save MMR Settings</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Backup & Restore Tab -->
+                    <div class="tab-pane fade" id="backup-settings" role="tabpanel" aria-labelledby="backup-tab">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Backup & Restore</h4>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="mb-3">Export Configuration</h5>
+                                <p>Export all settings and configurations to a file for backup or transfer to another instance.</p>
+                                <a th:href="@{/settings/export}" class="btn btn-primary mb-4">
+                                    <i class="bi bi-download"></i> Export All Settings
+                                </a>
+                                
+                                <hr>
+                                
+                                <h5 class="mb-3">Import Configuration</h5>
+                                <p>Import settings from a previously exported configuration file.</p>
+                                <form th:action="@{/settings/import}" method="post" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label for="configFile" class="form-label">Configuration File</label>
+                                        <input class="form-control" type="file" id="configFile" name="configFile" accept=".json">
+                                    </div>
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="overrideExisting" name="overrideExisting">
+                                        <label class="form-check-label" for="overrideExisting">
+                                            Override existing settings
+                                        </label>
+                                        <div class="form-text">If unchecked, only missing settings will be imported.</div>
+                                    </div>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-upload"></i> Import Settings
+                                    </button>
+                                </form>
+                                
+                                <hr>
+                                
+                                <h5 class="mb-3">Reset to Defaults</h5>
+                                <p class="text-danger">Warning: This will reset all settings to their default values. This action cannot be undone.</p>
+                                <form th:action="@{/settings/reset}" method="post" onsubmit="return confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.');">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Reset All Settings
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light py-3 mt-4">
+        <div class="container text-center">
+            <p class="mb-0">PnW Analyzer - Politics &amp; War Data Analysis Tool</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle API Key visibility
+            const apiKeyInput = document.getElementById('apiKey');
+            const toggleButton = document.getElementById('toggleApiKey');
+            
+            if (toggleButton) {
+                toggleButton.addEventListener('click', function() {
+                    if (apiKeyInput.type === 'password') {
+                        apiKeyInput.type = 'text';
+                        toggleButton.innerHTML = '<i class="bi bi-eye-slash"></i>';
+                    } else {
+                        apiKeyInput.type = 'password';
+                        toggleButton.innerHTML = '<i class="bi bi-eye"></i>';
+                    }
+                });
+            }
+            
+            // Test API connection
+            const testApiButton = document.getElementById('testApiButton');
+            if (testApiButton) {
+                testApiButton.addEventListener('click', function() {
+                    const apiKey = document.getElementById('apiKey').value;
+                    if (!apiKey) {
+                        alert('Please enter an API key before testing.');
+                        return;
+                    }
+                    
+                    testApiButton.disabled = true;
+                    testApiButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Testing...';
+                    
+                    fetch('/api/test?key=' + encodeURIComponent(apiKey))
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('API connection successful! Rate limit: ' + data.rateLimit + ' requests per minute.');
+                            } else {
+                                alert('API connection failed: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            alert('Error testing API connection: ' + error);
+                        })
+                        .finally(() => {
+                            testApiButton.disabled = false;
+                            testApiButton.innerHTML = 'Test API Connection';
+                        });
+                });
+            }
+            const resetToApiPricesButton = document.getElementById('resetToApiPrices');
+            if (resetToApiPricesButton) {
+                resetToApiPricesButton.addEventListener('click', function() {
+                    fetch('/api/resources/prices')
+                        .then(response => response.json())
+                        .then(data => {
+                            for (const [resource, price] of Object.entries(data)) {
+                                const input = document.getElementById('price-' + resource);
+                                if (input) {
+                                    input.value = price;
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            alert('Error fetching API prices: ' + error);
+                        });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
