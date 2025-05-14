@@ -30,13 +30,13 @@ public class ResourcePrices {
     public void setDate(LocalDateTime date) {
         this.date = date;
     }
-    
-    public Map<String, Double> getPrices() {
-        return prices;
-    }
-    
-    public void setPrices(Map<String, Double> prices) {
-        this.prices = prices;
+
+    public void setDate(String date) {
+        try {
+            this.date = LocalDateTime.parse(date);
+        } catch (Exception e) {
+            // Handle date parsing error
+        }
     }
     
     public Double getPrice(String resource) {
