@@ -8,14 +8,9 @@ public class ResourcePrices {
     private LocalDateTime date;
     private Map<String, Double> prices;
     
-    public ResourcePrices() {
-        this.prices = new HashMap<>();
-    }
-    
     public ResourcePrices(Map<String, Object> apiData) {
         this.prices = new HashMap<>();
         
-        // Parse date if present
         Object dateObj = apiData.get("date");
         if (dateObj instanceof String) {
             try {

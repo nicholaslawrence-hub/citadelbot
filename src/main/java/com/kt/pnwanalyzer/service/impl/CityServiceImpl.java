@@ -2,6 +2,7 @@ package com.kt.pnwanalyzer.service.impl;
 
 import com.kt.pnwanalyzer.analysis.CityAnalyzer;
 import com.kt.pnwanalyzer.model.GameConstants;
+import com.kt.pnwanalyzer.data.PnWDataFetcher;
 import com.kt.pnwanalyzer.model.ResourcePrices;
 import com.kt.pnwanalyzer.service.CityService;
 import org.slf4j.Logger;
@@ -14,9 +15,8 @@ import java.util.Map;
 
 @Service
 public class CityServiceImpl implements CityService {
-
-    private static final Logger logger = LoggerFactory.getLogger(CityServiceImpl.class);
     
+    private static final Logger logger = LoggerFactory.getLogger(CityServiceImpl.class);
     @Autowired
     private CityAnalyzer cityAnalyzer;
     
@@ -36,8 +36,6 @@ public class CityServiceImpl implements CityService {
         
         if (domesticPolicy != null && !domesticPolicy.trim().isEmpty()) {
             nationContext.put("domestic_policy", domesticPolicy);
-        } else {
-            nationContext.put("domestic_policy", "Open Markets"); 
         }
         
         Map<String, Boolean> activeProjects = new HashMap<>();
@@ -51,18 +49,16 @@ public class CityServiceImpl implements CityService {
                 }
             }
         }
-
-        Map<String, Double> resourcePrices = getCurrentResourcePrices(); 
+        Map<String, Double> resourcePrices = ResourcePrices.getPrices(); 
         Map<String, Object> buildResult = cityAnalyzer.generateOptimalBuild(
                 targetInfra, targetLand, nationContext, resourcePrices, mmrType);
         
         buildResult.put("optimizationType", optimizationType);
-        buildResult.put("domesticPolicy", domesticPolicy != null ? domesticPolicy : "None");
+        buildResult.put("domesticPolicy", domesticPolicy != null);
         
         if (projectsArray != null && projectsArray.length > 0) {
             buildResult.put("selectedProjects", projectsArray);
         }
-        
         return buildResult;
     }
     
@@ -87,6 +83,7 @@ public class CityServiceImpl implements CityService {
     }
     
     private Map<String, Double> getCurrentResourcePrices() {
+        ResourcePrices prices = new ResourcePrices();
         return ResourcePrices.getPrices();
     }
 }

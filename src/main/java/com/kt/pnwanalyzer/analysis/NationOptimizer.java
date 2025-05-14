@@ -7,9 +7,6 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Analyzes nations and calculates optimal strategies
- */
 public class NationOptimizer {
     private static final Logger logger = LoggerFactory.getLogger(NationOptimizer.class);
     

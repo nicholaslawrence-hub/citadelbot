@@ -7,7 +7,6 @@ import java.util.Map;
  * Constants for the Politics & War game mechanics
  */
 public class GameConstants {
-    // MMR Types (Military Readiness Requirements)
     public static final Map<String, Map<String, Object>> MMR_TYPES = new HashMap<>();
     static {
         Map<String, Object> peacetime = new HashMap<>();

@@ -208,7 +208,6 @@ public class AllianceServiceImpl implements AllianceService {
         // Get alliance data
         Map<String, Object> allianceData = dataFetcher.getAllDataForAnalysis(allianceId);
         
-        // Check if alliance data was found
         if (allianceData.isEmpty()) {
             return List.of();
         }
@@ -334,7 +333,6 @@ public class AllianceServiceImpl implements AllianceService {
     private List<Map<String, Object>> formatMilitaryBreakdown(Map<String, Integer> militaryUnits) {
         List<Map<String, Object>> result = new ArrayList<>();
         
-        // Map of military unit types to upkeep costs
         Map<String, Double> unitUpkeep = com.kt.pnwanalyzer.model.GameConstants.MILITARY_UNIT_UPKEEP;
         
         // Format each unit type
@@ -358,7 +356,6 @@ public class AllianceServiceImpl implements AllianceService {
             result.add(unitInfo);
         }
         
-        // Sort by upkeep (highest to lowest)
         result.sort((a, b) -> Double.compare((Double) b.get("upkeep"), (Double) a.get("upkeep")));
         
         return result;

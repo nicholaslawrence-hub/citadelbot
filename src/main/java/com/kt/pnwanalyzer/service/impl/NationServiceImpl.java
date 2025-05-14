@@ -126,7 +126,6 @@ public class NationServiceImpl implements NationService {
             String mmrType, 
             String optimizationTarget) {
         
-        // Get nation data
         Map<String, Object> nationData = getNationData(nationId);
         
         // Check if nation data was found
@@ -140,7 +139,6 @@ public class NationServiceImpl implements NationService {
         // Use the NationOptimizer to analyze the nation
         Map<String, Object> nationAnalysis = nationOptimizer.analyzeNation(nationData, resourcePrices, mmrType);
         
-        // Get city analyses from the nation analysis
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> cityAnalyses = (List<Map<String, Object>>) nationAnalysis.getOrDefault("city_analyses", List.of());
         
@@ -206,21 +204,7 @@ public class NationServiceImpl implements NationService {
     }
     
     private Map<String, Double> getResourcePrices() {
-        // In a real implementation, this would come from the API
-        Map<String, Double> resourcePrices = new HashMap<>();
-        resourcePrices.put("coal", 2500.0);
-        resourcePrices.put("oil", 3000.0);
-        resourcePrices.put("uranium", 5000.0);
-        resourcePrices.put("iron", 3000.0);
-        resourcePrices.put("bauxite", 2500.0);
-        resourcePrices.put("lead", 1800.0);
-        resourcePrices.put("gasoline", 3500.0);
-        resourcePrices.put("munitions", 3800.0);
-        resourcePrices.put("steel", 4000.0);
-        resourcePrices.put("aluminum", 3200.0);
-        resourcePrices.put("food", 550.0);
-        
-        return resourcePrices;
+        return ResourcePrices.getPrices();
     }
     
     private List<Map<String, Object>> formatResourceAnalysis(
