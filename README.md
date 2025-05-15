@@ -4,11 +4,11 @@ This application provides a comprehensive dashboard for the Knights Templar alli
 
 ## Features
 
-- **Automatic Data Refresh**: Automatically analyzes the Knights Templar alliance every hour
+- **API and Resource Caching** Saves user settings and caches API-pulled data for efficiency
 - **Interactive Dashboard**: Visualizes alliance data with charts and tables
 - **Nation Analysis**: Break down of each nation with specific optimization recommendations
-- **City Tier Analysis**: Compare nations by city count tiers
-- **Military Tracking**: Track military units and MMR compliance
+- **City Tier Analysis**: Compare nations by city count tiers, with graphical implementations
+- **MMR Tracking**: Track military units and MMR compliance
 - **Resource Production**: Analyze resource production across the alliance
 - **Optimal City Build**: Generate and export optimal city builds for any infrastructure level
 - **One-Click Optimization**: Quickly get city build templates for in-game use
@@ -18,16 +18,16 @@ This application provides a comprehensive dashboard for the Knights Templar alli
 
 1. Clone this repository:
 ```
-git clone https://github.com/your-username/knights-templar-dashboard.git
-cd knights-templar-dashboard
+git clone https://github.com/nicholaslawrence-hub/citadelbot)
+cd citadelbot
 ```
 
-2. Install the required dependencies:
-```
-pip install flask requests matplotlib
-```
+2. Install Java:
+
+Can be found on Oracle, Java SDK 17+ required. 
 
 3. Set up your P&W API key in the settings page or directly in `config.ini`:
+4. 
 ```
 [API]
 key = YOUR_API_KEY
@@ -35,9 +35,9 @@ key = YOUR_API_KEY
 
 ## Usage
 
-1. Start the web application:
+1. Run packaged jar file with Java
 ```
-python run_flask_server.py
+java -jar pnw-analyzer-1.0.0-SNAPSHOT.jar
 ```
 
 2. Open a web browser and navigate to:
@@ -45,20 +45,13 @@ python run_flask_server.py
 http://localhost:5000
 ```
 
-3. The dashboard will automatically run an analysis for Knights Templar (alliance #4124)
+3. The dashboard will open, and actions can be taken on the GUI to go through with analyses
 
 4. To generate an optimal build template, click the "Generate Optimal Build" button
 
 5. To quickly get a city build template, click the "One-Click Optimal" button
 
 ## Project Structure
-
-- `updated_pnw_data_analyzer.py` - The main analyzer script for fetching and processing alliance data
-- `flask_app.py` - The Flask web application
-- `run_flask_server.py` - Script to start the web server
-- `static/` - Contains CSS and JavaScript files
-- `templates/` - Contains HTML templates
-- `output/` - Directory where generated reports are stored
 
 ## MMR Types
 
@@ -70,9 +63,7 @@ The dashboard supports different Military Minimum Requirements (MMR) types:
 
 ## Requirements
 
-- Python 3.6+
-- Flask
-- Requests
+- Java (SDK 17+)
 - Politics & War API key
 - Web Browser
 
@@ -81,6 +72,3 @@ The dashboard supports different Military Minimum Requirements (MMR) types:
 This project is licensed under the MIT License.
 
 ## Acknowledgments
-
-- Politics & War API for providing the data
-- Knights Templar alliance for the community
