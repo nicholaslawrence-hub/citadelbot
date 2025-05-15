@@ -64,7 +64,6 @@ public class ConfigManager {
     
     public void save() {
         properties.setProperty("API.key", apiKey);
-        
         try (FileOutputStream fos = new FileOutputStream(CONFIG_FILE)) {
             properties.store(fos, "PnW Analyzer Configuration");
             logger.info("Configuration saved to {}", CONFIG_FILE);

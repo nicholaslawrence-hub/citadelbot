@@ -3,11 +3,13 @@ package com.kt.pnwanalyzer.analysis;
 import com.kt.pnwanalyzer.model.GameConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+@Component
 public class CityAnalyzer {
     private static final Logger logger = LoggerFactory.getLogger(CityAnalyzer.class);
     
@@ -169,7 +171,7 @@ public class CityAnalyzer {
             
             if (Boolean.TRUE.equals(activeProjects.get(projectName)) && 
                 projectSettings.containsKey("max_change")) {
-                
+
                 @SuppressWarnings("unchecked")
                 Map<String, Integer> maxChanges = (Map<String, Integer>) projectSettings.get("max_change");
                 if (maxChanges != null && maxChanges.containsKey(improvementKey)) {
@@ -177,7 +179,6 @@ public class CityAnalyzer {
                 }
             }
         }
-        
         return baseMaxCount;
     }
     
@@ -276,9 +277,8 @@ public class CityAnalyzer {
                 currentCommerce += commerceBonus;
             }
         }
-        
-        // Get max commerce rate, modified by projects
-        @SuppressWarnings("unchecked")
+
+        // Commerce from policies
         Map<String, Object> commerceConfig = (Map<String, Object>) gameConstants.get("commerce");
         double maxCommerce = ((Number) commerceConfig.getOrDefault("max_rate", 100.0)).doubleValue();
         
@@ -301,46 +301,43 @@ public class CityAnalyzer {
     }
     
     // More methods for calculating disease rate, crime rate, etc.
-    
-    /**
-     * Calculate the optimal build for a city with the given infrastructure and land
-     */
+
     public Map<String, Object> generateOptimalBuild(
             double targetInfraLevel, 
             double targetLandAmount, 
             Map<String, Object> nationDataContext,
             Map<String, Double> resourcePrices,
             String mmrTypeName) {
-        
+
         Map<String, Boolean> activeProjects = getActiveProjects(nationDataContext);
-        
+
         // Round infra to nearest 50
         targetInfraLevel = Math.ceil(targetInfraLevel / 50.0) * 50.0;
         int maxSlotsForInfra = (int) (targetInfraLevel / 50);
-        
+
         // Start with empty build
         Map<String, Integer> buildInProgress = new HashMap<>();
         for (String impKey : improvementDetails.keySet()) {
             buildInProgress.put(impKey, 0);
         }
-        
+
         // Add MMR requirements
-        @SuppressWarnings("unchecked")
         Map<String, Object> mmrRequirements = (Map<String, Object>) GameConstants.MMR_TYPES.getOrDefault(
                 mmrTypeName, GameConstants.MMR_TYPES.get("peacetime"));
-        
+
         for (Map.Entry<String, Object> entry : mmrRequirements.entrySet()) {
             String impKey = entry.getKey();
             if (!"name".equals(impKey)) {
                 int countVal = ((Number) entry.getValue()).intValue();
+                int maxCountForThisImp = getMaxImprovementCount(impKey, activeProjects);
                 buildInProgress.put(impKey, countVal);
             }
+            boolean cityIsPoweredForBuild = isCityPowered(buildInProgress);
+            int currentCount = buildInProgress.getOrDefault(impKey, 0);
+            buildInProgress.put(impKey, currentCount);
         }
         
-        // Check if city is powered
         boolean cityIsPoweredForBuild = isCityPowered(buildInProgress);
-        
-        // If not powered, add nuclear power
         if (!cityIsPoweredForBuild) {
             int nukeMaxCount = getMaxImprovementCount("nuclearpower", activeProjects);
             int nukesToAddInitially = Math.min(nukeMaxCount, 2);
@@ -365,7 +362,6 @@ public class CityAnalyzer {
             }
         }
         
-        // Log initial build
         StringBuilder initialBuildInfo = new StringBuilder("Optimal Build: Initial (MMR+Power): { ");
         for (Map.Entry<String, Integer> entry : buildInProgress.entrySet()) {
             if (entry.getValue() > 0) {
@@ -560,12 +556,13 @@ public class CityAnalyzer {
         
         Map<String, Boolean> activeProjects = getActiveProjects(nationDataContext);
         String nationPolicyName = (String) nationDataContext.getOrDefault("domestic_policy", "");
-        
-        // Get city age (defaulting to 1 year if not available)
+
         int cityAgeInDays = 365;
         if (cityImprovements.containsKey("date_founded")) {
-            // Date parsing would go here, using a library like LocalDate or similar
-            // For simplicity, we'll use 1 year as default if parsing fails
+            String dateFoundedStr = cityImprovements.get("date_founded").toString();
+            LocalDateTime dateFounded = LocalDateTime.parse(dateFoundedStr);
+            LocalDateTime currentDate = LocalDateTime.now();
+            cityAgeInDays = (int) ChronoUnit.DAYS.between(dateFounded, currentDate);
         }
         
         // Calculate metrics
@@ -935,8 +932,7 @@ public class CityAnalyzer {
         if (numPoliceStations > 0) {
             Map<String, Object> policeConfig = improvementDetails.get("policestation");
             policeEffectivenessPoints = ((Number) policeConfig.get("crime_reduction_base")).doubleValue();
-            
-            // Check for Specialized Police Training project
+             
             if (Boolean.TRUE.equals(activeProjects.get("Specialized Police Training"))) {
                 Map<String, Object> sptConfig = projectEffects.get("Specialized Police Training");
                 double bonusPoints = ((Number) sptConfig.getOrDefault("bonus_value_points", 0.0)).doubleValue();

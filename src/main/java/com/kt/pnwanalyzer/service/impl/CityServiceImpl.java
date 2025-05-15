@@ -49,7 +49,7 @@ public class CityServiceImpl implements CityService {
                 }
             }
         }
-        Map<String, Double> resourcePrices = ResourcePrices.getPrices(); 
+        Map<String, Double> resourcePrices = null;
         Map<String, Object> buildResult = cityAnalyzer.generateOptimalBuild(
                 targetInfra, targetLand, nationContext, resourcePrices, mmrType);
         
@@ -83,7 +83,6 @@ public class CityServiceImpl implements CityService {
     }
     
     private Map<String, Double> getCurrentResourcePrices() {
-        ResourcePrices prices = new ResourcePrices();
-        return ResourcePrices.getPrices();
+        return null;
     }
 }

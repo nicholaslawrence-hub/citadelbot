@@ -1,5 +1,9 @@
 package com.kt.pnwanalyzer.model;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.stereotype.Component;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -7,7 +11,10 @@ import java.util.Map;
 /**
  * Represents nation data from the Politics & War API
  */
+@Setter
+@Getter
 public class NationData {
+    // Getters and setters
     private int id;
     private String nationName;
     private String leaderName;
@@ -26,9 +33,7 @@ public class NationData {
     private int nukes;
     private List<Map<String, Object>> cities;
     private Map<String, Boolean> projects;
-    
-    public NationData() {
-    }
+
     
     public NationData(Map<String, Object> apiData) {
         this.id = ((Number) apiData.getOrDefault("id", 0)).intValue();
@@ -56,150 +61,5 @@ public class NationData {
                 // Handle date parsing error
             }
         }
-    }
-    
-    // Getters and setters
-    public int getId() {
-        return id;
-    }
-    
-    public void setId(int id) {
-        this.id = id;
-    }
-    
-    public String getNationName() {
-        return nationName;
-    }
-    
-    public void setNationName(String nationName) {
-        this.nationName = nationName;
-    }
-    
-    public String getLeaderName() {
-        return leaderName;
-    }
-    
-    public void setLeaderName(String leaderName) {
-        this.leaderName = leaderName;
-    }
-    
-    public String getAlliancePosition() {
-        return alliancePosition;
-    }
-    
-    public void setAlliancePosition(String alliancePosition) {
-        this.alliancePosition = alliancePosition;
-    }
-    
-    public String getColor() {
-        return color;
-    }
-    
-    public void setColor(String color) {
-        this.color = color;
-    }
-    
-    public double getScore() {
-        return score;
-    }
-    
-    public void setScore(double score) {
-        this.score = score;
-    }
-    
-    public int getNumCities() {
-        return numCities;
-    }
-    
-    public void setNumCities(int numCities) {
-        this.numCities = numCities;
-    }
-    
-    public LocalDateTime getLastActive() {
-        return lastActive;
-    }
-    
-    public void setLastActive(LocalDateTime lastActive) {
-        this.lastActive = lastActive;
-    }
-    
-    public String getWarPolicy() {
-        return warPolicy;
-    }
-    
-    public void setWarPolicy(String warPolicy) {
-        this.warPolicy = warPolicy;
-    }
-    
-    public String getDomesticPolicy() {
-        return domesticPolicy;
-    }
-    
-    public void setDomesticPolicy(String domesticPolicy) {
-        this.domesticPolicy = domesticPolicy;
-    }
-    
-    public int getSoldiers() {
-        return soldiers;
-    }
-    
-    public void setSoldiers(int soldiers) {
-        this.soldiers = soldiers;
-    }
-    
-    public int getTanks() {
-        return tanks;
-    }
-    
-    public void setTanks(int tanks) {
-        this.tanks = tanks;
-    }
-    
-    public int getAircraft() {
-        return aircraft;
-    }
-    
-    public void setAircraft(int aircraft) {
-        this.aircraft = aircraft;
-    }
-    
-    public int getShips() {
-        return ships;
-    }
-    
-    public void setShips(int ships) {
-        this.ships = ships;
-    }
-    
-    public int getMissiles() {
-        return missiles;
-    }
-    
-    public void setMissiles(int missiles) {
-        this.missiles = missiles;
-    }
-    
-    public int getNukes() {
-        return nukes;
-    }
-    
-    public void setNukes(int nukes) {
-        this.nukes = nukes;
-    }
-    
-    public List<Map<String, Object>> getCities() {
-        return cities;
-    }
-    
-    public void setCities(List<Map<String, Object>> cities) {
-        this.cities = cities;
-    }
-    
-    public Map<String, Boolean> getProjects() {
-        return projects;
-    }
-    
-    public void setProjects(Map<String, Boolean> projects) {
-        this.projects = projects;
     }
 }

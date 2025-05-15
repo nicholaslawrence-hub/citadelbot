@@ -9,6 +9,7 @@ import com.kt.pnwanalyzer.model.ResourcePrices;
 import com.kt.pnwanalyzer.util.ConfigManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,6 +19,7 @@ import java.net.http.HttpResponse;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+@Component
 public class PnWDataFetcher {
     private static final Logger logger = LoggerFactory.getLogger(PnWDataFetcher.class);
     private static final String API_URL = "https://api.politicsandwar.com/graphql";

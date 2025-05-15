@@ -1,9 +1,12 @@
 package com.kt.pnwanalyzer.model;
 
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Getter
 public class ResourcePrices {
     private LocalDateTime date;
     private Map<String, Double> prices;
@@ -16,7 +19,6 @@ public class ResourcePrices {
             try {
                 this.date = LocalDateTime.parse((String) dateObj);
             } catch (Exception e) {
-                // Handle date parsing error
             }
         }
         for (Map.Entry<String, Object> entry : apiData.entrySet()) {
@@ -38,7 +40,7 @@ public class ResourcePrices {
             // Handle date parsing error
         }
     }
-    
+
     public Double getPrice(String resource) {
         return prices.getOrDefault(resource, 0.0);
     }

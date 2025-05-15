@@ -204,7 +204,7 @@ public class NationServiceImpl implements NationService {
     }
     
     private Map<String, Double> getResourcePrices() {
-        return ResourcePrices.getPrices();
+        return null;
     }
     
     private List<Map<String, Object>> formatResourceAnalysis(
@@ -222,9 +222,9 @@ public class NationServiceImpl implements NationService {
             Map<String, Object> nationData, 
             Map<String, Double> resourcePrices, 
             String mmrType) {
-        
+        return null;
         // Use the existing CityAnalyzer class from the nation optimizer
         // This is a simplified example - in a real app, you would use your CityAnalyzer instance
-        return nationOptimizer.getCityAnalyzer().generateOptimalBuild(infrastructure, land, nationData, resourcePrices, mmrType);
+        // return nationOptimizer.getCityAnalyzer().generateOptimalBuild(infrastructure, land, nationData, resourcePrices, mmrType);
     }
 }

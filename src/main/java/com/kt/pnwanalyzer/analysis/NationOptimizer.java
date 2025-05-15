@@ -3,10 +3,12 @@ package com.kt.pnwanalyzer.analysis;
 import com.kt.pnwanalyzer.model.GameConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Component
 public class NationOptimizer {
     private static final Logger logger = LoggerFactory.getLogger(NationOptimizer.class);
     
